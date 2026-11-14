@@ -603,3 +603,163 @@ button:disabled {
   cursor: pointer;
   font-weight: 600;
 }
+
+/* Dashboard polish: progress, form controls, and responsive spacing */
+.progress-section {
+  padding: 25px;
+}
+
+.progress-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.progress-heading h2 {
+  font-size: 21px;
+}
+
+.progress-heading > strong {
+  color: #635bdb;
+  font-size: 25px;
+  font-weight: 800;
+}
+
+.progress-track {
+  width: 100%;
+  height: 11px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #eeedfb;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8178f2, #635bdb);
+  transition: width 0.35s ease;
+}
+
+.task-form-options {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 14px;
+}
+
+.task-form-options label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #656a80;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.task-form-options select,
+.task-form-options input[type="date"] {
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  padding: 11px 13px;
+  border: 1px solid #e0e3ee;
+  border-radius: 9px;
+  outline: none;
+  background: #fafbff;
+  color: #30344b;
+}
+
+.task-form-options select:focus,
+.task-form-options input[type="date"]:focus {
+  border-color: #635bdb;
+  box-shadow: 0 0 0 3px rgba(99, 91, 219, 0.1);
+}
+
+.task-form input,
+.task-form textarea,
+.edit-form input,
+.edit-form textarea {
+  color: #30344b;
+  font-size: 14px;
+}
+
+.task-form input::placeholder,
+.task-form textarea::placeholder,
+.edit-form input::placeholder,
+.edit-form textarea::placeholder {
+  color: #a0a4b5;
+}
+
+.task-card {
+  background: #fff;
+}
+
+.task-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+  margin-top: 12px;
+}
+
+.priority-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.priority-low {
+  color: #16845b;
+  background: #e8f8f0;
+}
+
+.priority-medium {
+  color: #9a6a0b;
+  background: #fff5dc;
+}
+
+.priority-high {
+  color: #c43e50;
+  background: #ffedf0;
+}
+
+.due-date {
+  color: #85899c;
+  font-size: 12px;
+}
+
+@media (max-width: 650px) {
+  .task-form-options {
+    grid-template-columns: 1fr;
+  }
+
+  .progress-heading h2 {
+    font-size: 18px;
+  }
+
+  .progress-heading > strong {
+    font-size: 22px;
+  }
+
+  .search-box {
+    align-items: stretch;
+  }
+
+  .task-actions button {
+    flex: 1;
+  }
+}
+
+@media (max-width: 380px) {
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-header {
+    align-items: flex-start;
+  }
+}
