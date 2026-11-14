@@ -49,19 +49,39 @@ router.post('/register', authRateLimit, async (req, res) => {
   try {
     const { name, email, password } = req.body
 
-    if (!name || !email || !password) {
+    if (
+      typeof name !== 'string' ||
+      typeof email !== 'string' ||
+      typeof password !== 'string' ||
+      !name.trim() ||
+      !email.trim() ||
+      !password
+    ) {
       return res.status(400).json({
         message: 'Name, email and password are required',
       })
     }
 
-    if (password.length < 6) {
+    const normalizedName = name.trim()
+    const normalizedEmail = email.toLowerCase().trim()
+
+    if (normalizedName.length < 2 || normalizedName.length > 80) {
       return res.status(400).json({
-        message: 'Password must be at least 6 characters',
+        message: 'Name must be between 2 and 80 characters',
       })
     }
 
-    const normalizedEmail = email.toLowerCase().trim()
+    if (normalizedEmail.length > 254 || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(normalizedEmail)) {
+      return res.status(400).json({
+        message: 'Please provide a valid email address',
+      })
+    }
+
+    if (password.length < 8 || Buffer.byteLength(password, 'utf8') > 72) {
+      return res.status(400).json({
+        message: 'Password must be at least 8 characters and no more than 72 bytes',
+      })
+    }
 
     const existingUser = await User.findOne({
       email: normalizedEmail,
@@ -76,7 +96,7 @@ router.post('/register', authRateLimit, async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10)
 
     const user = await User.create({
-      name: name.trim(),
+      name: normalizedName,
       email: normalizedEmail,
       password: hashedPassword,
     })
@@ -108,14 +128,31 @@ router.post('/login', authRateLimit, async (req, res) => {
   try {
     const { email, password } = req.body
 
-    if (!email || !password) {
+    if (
+      typeof email !== 'string' ||
+      typeof password !== 'string' ||
+      !email.trim() ||
+      !password
+    ) {
       return res.status(400).json({
         message: 'Email and password are required',
       })
     }
 
+    const normalizedEmail = email.toLowerCase().trim()
+
+    if (
+      normalizedEmail.length > 254 ||
+      !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(normalizedEmail) ||
+      Buffer.byteLength(password, 'utf8') > 72
+    ) {
+      return res.status(400).json({
+        message: 'Invalid email or password format',
+      })
+    }
+
     const user = await User.findOne({
-      email: email.toLowerCase().trim(),
+      email: normalizedEmail,
     })
 
     if (!user) {
