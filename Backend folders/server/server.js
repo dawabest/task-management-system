@@ -8,8 +8,21 @@ import authRoutes from './routes/authRoutes.js'
 
 const app = express()
 
-app.use(cors())
-app.use(express.json())
+const allowedOrigins = [
+  'https://task-management-system-live.vercel.app',
+  'http://localhost:5173',
+]
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true)
+    }
+
+    return callback(new Error('Origin not allowed by CORS'))
+  },
+}))
+app.use(express.json({ limit: '10kb' }))
 
 app.get('/', (req, res) => {
   res.send('Task Management API is running!')
