@@ -1,5 +1,6 @@
 
 import express from 'express'
+import mongoose from 'mongoose'
 import Task from '../models/Task.js'
 import protect from '../middleware/authMiddleware.js'
 
@@ -24,9 +25,27 @@ router.post('/', async (req, res) => {
   try {
     const { title, description, priority, dueDate } = req.body
 
-    if (!title || !title.trim()) {
+    if (typeof title !== 'string' || !title.trim()) {
       return res.status(400).json({
         message: 'Task title is required',
+      })
+    }
+
+    if (title.trim().length > 120) {
+      return res.status(400).json({
+        message: 'Task title must be 120 characters or fewer',
+      })
+    }
+
+    if (description !== undefined && typeof description !== 'string') {
+      return res.status(400).json({
+        message: 'Task description must be text',
+      })
+    }
+
+    if (description && description.length > 2000) {
+      return res.status(400).json({
+        message: 'Task description must be 2000 characters or fewer',
       })
     }
 
@@ -63,13 +82,35 @@ router.post('/', async (req, res) => {
 // Update a task
 router.put('/:id', async (req, res) => {
   try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid task ID' })
+    }
+
     const allowedUpdates = {}
 
+    if (req.body.title !== undefined && typeof req.body.title !== 'string') {
+      return res.status(400).json({ message: 'Task title must be text' })
+    }
+
     if (typeof req.body.title === 'string') {
+      if (req.body.title.trim().length > 120) {
+        return res.status(400).json({
+          message: 'Task title must be 120 characters or fewer',
+        })
+      }
       allowedUpdates.title = req.body.title.trim()
     }
 
+    if (req.body.description !== undefined && typeof req.body.description !== 'string') {
+      return res.status(400).json({ message: 'Task description must be text' })
+    }
+
     if (typeof req.body.description === 'string') {
+      if (req.body.description.length > 2000) {
+        return res.status(400).json({
+          message: 'Task description must be 2000 characters or fewer',
+        })
+      }
       allowedUpdates.description = req.body.description
     }
 
@@ -139,6 +180,10 @@ router.put('/:id', async (req, res) => {
 // Delete a task
 router.delete('/:id', async (req, res) => {
   try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid task ID' })
+    }
+
     const deletedTask = await Task.findOneAndDelete({
       _id: req.params.id,
       user: req.user._id,
