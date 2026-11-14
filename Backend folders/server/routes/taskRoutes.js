@@ -22,7 +22,6 @@ router.get('/', async (req, res) => {
 // Create a task
 router.post('/', async (req, res) => {
   try {
-    console.log('Incoming dueDate:', req.body.dueDate)
     const { title, description, priority, dueDate } = req.body
 
     if (!title || !title.trim()) {
