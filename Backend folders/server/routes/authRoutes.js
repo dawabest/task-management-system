@@ -6,8 +6,46 @@ import User from '../models/User.js'
 
 const router = express.Router()
 
+const AUTH_WINDOW_MS = 15 * 60 * 1000
+const AUTH_MAX_ATTEMPTS = 10
+const authAttempts = new Map()
+let requestsSinceCleanup = 0
+
+const authRateLimit = (req, res, next) => {
+  const now = Date.now()
+  const key = req.ip || req.socket.remoteAddress || 'unknown'
+  let record = authAttempts.get(key)
+
+  if (!record || now >= record.resetAt) {
+    record = { count: 0, resetAt: now + AUTH_WINDOW_MS }
+  }
+
+  record.count += 1
+  authAttempts.set(key, record)
+
+  requestsSinceCleanup += 1
+  if (requestsSinceCleanup >= 100) {
+    for (const [ip, entry] of authAttempts) {
+      if (now >= entry.resetAt) authAttempts.delete(ip)
+    }
+    requestsSinceCleanup = 0
+  }
+
+  res.set('RateLimit-Limit', String(AUTH_MAX_ATTEMPTS))
+  res.set('RateLimit-Remaining', String(Math.max(0, AUTH_MAX_ATTEMPTS - record.count)))
+  res.set('RateLimit-Reset', String(Math.ceil(record.resetAt / 1000)))
+
+  if (record.count > AUTH_MAX_ATTEMPTS) {
+    return res.status(429).json({
+      message: 'Too many authentication attempts. Please try again in 15 minutes.',
+    })
+  }
+
+  next()
+}
+
 // Register a new user
-router.post('/register', async (req, res) => {
+router.post('/register', authRateLimit, async (req, res) => {
   try {
     const { name, email, password } = req.body
 
@@ -66,7 +104,7 @@ router.post('/register', async (req, res) => {
 })
 
 // Login an existing user
-router.post('/login', async (req, res) => {
+router.post('/login', authRateLimit, async (req, res) => {
   try {
     const { email, password } = req.body
 
