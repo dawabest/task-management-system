@@ -8,6 +8,20 @@ import authRoutes from './routes/authRoutes.js'
 
 const app = express()
 
+// Basic security headers
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('X-Frame-Options', 'DENY')
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+  res.setHeader('X-DNS-Prefetch-Control', 'off')
+
+  if (process.env.NODE_ENV === 'production') {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+  }
+
+  next()
+})
+
 const allowedOrigins = [
   'https://task-management-system-live.vercel.app',
   'http://localhost:5173',
